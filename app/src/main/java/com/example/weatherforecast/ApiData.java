@@ -4,18 +4,12 @@ import com.google.gson.annotations.SerializedName;
 
 import java.util.List;
 
+
+// refer to https://api.data.gov.sg/v1/environment/2-hour-weather-forecast
+// and then copy paste the content to clipboard
+// use JSON formatter (https://jsonformatter.org/) to understand the nested class structure
+
 public class ApiData {
-    /* {
-        "area_metadata": List<Area>
-        "items": [{
-               "update_timestamp": ...
-               "timestamp": ...
-               "valid_period": {start: ...
-                                end: ...}
-               "forecasts": List<Forecast>
-        }]
-       }
-     */
     @SerializedName("area_metadata")
     private List<AreaMetadata> areaMetadata;
 
@@ -69,8 +63,6 @@ public class ApiData {
             }
         }
     }
-
-
 
     //Nested class ForecastItem
     public class ForecastItem {

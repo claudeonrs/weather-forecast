@@ -1,22 +1,16 @@
 package com.example.weatherforecast;
 
 import android.Manifest;
-import android.annotation.SuppressLint;
 import android.content.pm.PackageManager;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
 import android.os.Bundle;
-import android.text.Html;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.SearchView;
 import androidx.core.app.ActivityCompat;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -28,8 +22,10 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -143,27 +139,31 @@ public class MainActivity extends AppCompatActivity {
 
                 // function to calculate squared distance
                 class Helper {
-                    public double getDistanceFromIndex(int index) {
-                        return Math.pow((areaDataList.get(index).getLatitude() - currLat),2) +
-                                Math.pow((areaDataList.get(index).getLongitude() - currLong),2);
+                    public double getSquaredDistanceFromIndex(int index) {
+                        // scale to prevent rounding-off
+                        double scale = 1000;
+                        return Math.pow((areaDataList.get(index).getLatitude()*scale - currLat*scale),2) +
+                                Math.pow((areaDataList.get(index).getLongitude()*scale - currLong*scale),2);
                     }
                 }
 
                 // find the nearest area by looping through the list
                 Helper helper = new Helper();
-                double minSquaredDistance = helper.getDistanceFromIndex(0);
+                double minSquaredDistance = helper.getSquaredDistanceFromIndex(0);
                 for (int i=1; i<numOfAreas; i++) {
-                    double currSquaredDistance = helper.getDistanceFromIndex(i);
+                    double currSquaredDistance = helper.getSquaredDistanceFromIndex(i);
                     if (currSquaredDistance < minSquaredDistance) {
                         nearestAreaIndex = i;
                     }
                 }
 
+                Map<String, String> iconHashMap = new IconHashMap().getIconHashMap();
+
                 // set text here
                 String content = "";
                 AreaData shownArea = areaDataList.get(nearestAreaIndex);
                 content += shownArea.getName() + "\n";
-                content += shownArea.getForecast() + "\n";
+                content += shownArea.getForecast() + " " + iconHashMap.get(shownArea.getForecast()) + "\n";
                 content += shownArea.getLatitude() + ", " + shownArea.getLongitude();
                 textView.setText(content);
 
