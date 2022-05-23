@@ -34,6 +34,7 @@ public class ApiData {
     // Nested class AreaMetadata
     public class AreaMetadata {
         private String name;
+        @SerializedName("label_location")
         private LatLong latLong;
 
         public AreaMetadata(String name, LatLong latLong) {

@@ -1,14 +1,35 @@
 package com.example.weatherforecast;
 
+import android.Manifest;
+import android.annotation.SuppressLint;
+import android.content.pm.PackageManager;
+import android.location.Address;
+import android.location.Geocoder;
+import android.location.Location;
 import android.os.Bundle;
+import android.text.Html;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SearchView;
+import androidx.core.app.ActivityCompat;
+
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 
 import org.jetbrains.annotations.Nullable;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -18,13 +39,68 @@ import retrofit2.Retrofit;
 
 public class MainActivity extends AppCompatActivity {
 
+    FusedLocationProviderClient fusedLocationProviderClient;
+    TextView coordTextView;
+    double currLat, currLong;
+
+    // List of AreaData containing info abt area name, lat, long, and current forecast
+    // update list using sync()
+    List<AreaData> areaDataList;
 
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         this.setContentView(R.layout.activity_main);
+        coordTextView = findViewById(R.id.coordTextView);
+
+        // Initialize fusedLocationProviderClient for getLocation()
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+
+        sync();
     }
 
-    public void sync(View view) {
+    // get currLat and currLong
+    private void getLocation() {
+        // when permission denied
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(MainActivity.this,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 44);
+            coordTextView.setText("Permission Denied");
+            return;
+        }
+        fusedLocationProviderClient.getLastLocation().addOnCompleteListener(new OnCompleteListener<Location>() {
+            @Override
+            public void onComplete(@NonNull Task<Location> task) {
+                // initialize location
+                Location location = task.getResult();
+                if (location != null) {
+                    try {
+                        // Initialize geoCoder
+                        Geocoder geocoder = new Geocoder(MainActivity.this, Locale.getDefault());
+                        // Initialize address list
+                        List<Address> addresses = geocoder.getFromLocation(
+                                location.getLatitude(), location.getLongitude(), 1
+                        );
+                        // Set latitude on coordTextView
+                        currLat  = addresses.get(0).getLatitude();
+                        currLong = addresses.get(0).getLongitude();
+                        String content = new String();
+                        content += currLat + ", " + currLong;
+                        coordTextView.setText(content);
+                    } catch (IOException e) {
+                        coordTextView.setText("Error");
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
+    }
+
+    // Sync refreshes API as well as current location
+    public void sync(View view) {sync();}
+    public void sync() {
+        // update currLat and currLong
+        getLocation();
+
         TextView textView = findViewById(R.id.textView);
 
         Retrofit retrofit = new Retrofit.Builder()
@@ -34,7 +110,7 @@ public class MainActivity extends AppCompatActivity {
 
         ApiInterface apiInterface = retrofit.create(ApiInterface.class);
 
-        // getForecast is just a placeholder name
+        // convert JSON to Java class ApiData
         Call<ApiData> call = apiInterface.getApiData();
 
         call.enqueue(new Callback<ApiData>() {
@@ -46,15 +122,56 @@ public class MainActivity extends AppCompatActivity {
                     return;
                 }
                 ApiData apiData = response.body();
-                String content = "";
-                content += apiData.getAreaMetadata().get(1).getName();
 
-                textView.append(content);
+                // loop to update areaDataList
+                areaDataList = new ArrayList<AreaData>();
+                int numOfAreas = apiData.getAreaMetadata().size(); // number of areas in SG
+                for (int i=0; i<numOfAreas; i++) {
+                    ApiData.AreaMetadata currAreaMetadata = apiData.getAreaMetadata().get(i);
+                    String currAreaName = currAreaMetadata.getName();
+                    ApiData.AreaMetadata.LatLong currLatLong = currAreaMetadata.getLatLong();
+                    double currAreaLat  = currLatLong.getLatitude();
+                    double currAreaLong = currLatLong.getLongitude();
+                    String currAreaForecast = apiData.getForecastItems().get(0).getForecasts().get(i).getForecast();
+                    AreaData currAreaData = new AreaData(currAreaName, currAreaLat,
+                            currAreaLong, currAreaForecast);
+                    areaDataList.add(currAreaData);
+                }
+
+                // index of nearest area in List<AreaData>
+                int nearestAreaIndex = 0;
+
+                // function to calculate squared distance
+                class Helper {
+                    public double getDistanceFromIndex(int index) {
+                        return Math.pow((areaDataList.get(index).getLatitude() - currLat),2) +
+                                Math.pow((areaDataList.get(index).getLongitude() - currLong),2);
+                    }
+                }
+
+                // find the nearest area by looping through the list
+                Helper helper = new Helper();
+                double minSquaredDistance = helper.getDistanceFromIndex(0);
+                for (int i=1; i<numOfAreas; i++) {
+                    double currSquaredDistance = helper.getDistanceFromIndex(i);
+                    if (currSquaredDistance < minSquaredDistance) {
+                        nearestAreaIndex = i;
+                    }
+                }
+
+                // set text here
+                String content = "";
+                AreaData shownArea = areaDataList.get(nearestAreaIndex);
+                content += shownArea.getName() + "\n";
+                content += shownArea.getForecast() + "\n";
+                content += shownArea.getLatitude() + ", " + shownArea.getLongitude();
+                textView.setText(content);
+
             }
 
             @Override
             public void onFailure(Call<ApiData> call, Throwable t) {
-                // get error message
+                // get error message if there is error
                 textView.setText(t.getMessage());
             }
         });
