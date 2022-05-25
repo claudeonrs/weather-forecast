@@ -12,6 +12,8 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
@@ -41,7 +43,7 @@ public class MainActivity extends AppCompatActivity {
 
     // List of AreaData containing info abt area name, lat, long, and current forecast
     // update list using sync()
-    List<AreaData> areaDataList;
+    ArrayList<AreaData> areaDataList;
 
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -99,6 +101,11 @@ public class MainActivity extends AppCompatActivity {
 
         TextView textView = findViewById(R.id.textView);
 
+        RecyclerView areaForecastList = findViewById(R.id.recyclerView);
+        AreasForecastRecyclerAdapter adapter = new AreasForecastRecyclerAdapter();
+        areaForecastList.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        areaForecastList.setAdapter(adapter);
+
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("https://api.data.gov.sg/")
                 .addConverterFactory(GsonConverterFactory.create())
@@ -134,6 +141,8 @@ public class MainActivity extends AppCompatActivity {
                     areaDataList.add(currAreaData);
                 }
 
+                adapter.updateItems(areaDataList);
+
                 // index of nearest area in List<AreaData>
                 int nearestAreaIndex = 0;
 
@@ -166,7 +175,6 @@ public class MainActivity extends AppCompatActivity {
                 content += shownArea.getForecast() + " " + iconHashMap.get(shownArea.getForecast()) + "\n";
                 content += shownArea.getLatitude() + ", " + shownArea.getLongitude();
                 textView.setText(content);
-
             }
 
             @Override
