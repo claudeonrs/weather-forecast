@@ -9,18 +9,22 @@ import androidx.recyclerview.widget.RecyclerView
 
 class AreasForecastViewHolder(
     private val itemView: View
-): RecyclerView.ViewHolder(itemView) {
+) : RecyclerView.ViewHolder(itemView) {
     private val tvAreaName: TextView = itemView.findViewById(R.id.area_name)
     private val tvAreaWeather: TextView = itemView.findViewById(R.id.area_weather)
+    private val tvAreaIcon: TextView = itemView.findViewById(R.id.area_icon)
 
-    fun bind(areaNameContent: String, areaWeatherContent: String) {
+
+    fun bind(areaNameContent: String, areaWeatherContent: String, areaIconContent: String) {
         tvAreaName.text = areaNameContent
         tvAreaWeather.text = areaWeatherContent
+        tvAreaIcon.text = areaIconContent
     }
 
     companion object {
         fun create(parent: ViewGroup): AreasForecastViewHolder {
-            val itemView = LayoutInflater.from(parent.context).inflate(R.layout.item_basic_forecast, parent, false)
+            val itemView = LayoutInflater.from(parent.context)
+                .inflate(R.layout.item_basic_forecast, parent, false)
             return AreasForecastViewHolder(itemView)
         }
     }

@@ -15,7 +15,7 @@ public class IconHashMap {
 
         iconHashMap.put("Light Rain", "\uD83C\uDF26");
         iconHashMap.put("Showers", "\uD83C\uDF27");
-        iconHashMap.put("Thundery Showers", "insert emoji or smth");
+        iconHashMap.put("Thundery Showers", "\u26C8");
     }
 
 

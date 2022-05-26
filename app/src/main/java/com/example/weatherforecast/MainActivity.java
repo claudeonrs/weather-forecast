@@ -79,7 +79,7 @@ public class MainActivity extends AppCompatActivity {
                                 location.getLatitude(), location.getLongitude(), 1
                         );
                         // Set latitude on coordTextView
-                        currLat  = addresses.get(0).getLatitude();
+                        currLat = addresses.get(0).getLatitude();
                         currLong = addresses.get(0).getLongitude();
                         String content = new String();
                         content += currLat + ", " + currLong;
@@ -94,13 +94,17 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // Sync refreshes API as well as current location
-    public void sync(View view) {sync();}
+    public void sync(View view) {
+        sync();
+    }
+
     public void sync() {
         // update currLat and currLong
         getLocation();
 
         TextView textView = findViewById(R.id.textView);
 
+        Map<String, String> iconHashMap = new IconHashMap().getIconHashMap();
         RecyclerView areaForecastList = findViewById(R.id.recyclerView);
         AreasForecastRecyclerAdapter adapter = new AreasForecastRecyclerAdapter();
         areaForecastList.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
@@ -121,7 +125,7 @@ public class MainActivity extends AppCompatActivity {
             public void onResponse(Call<ApiData> call, Response<ApiData> response) {
                 if (!response.isSuccessful()) {
                     // if not successful, return response code
-                    textView.setText("Code: "+response.code());
+                    textView.setText("Code: " + response.code());
                     return;
                 }
                 ApiData apiData = response.body();
@@ -129,15 +133,16 @@ public class MainActivity extends AppCompatActivity {
                 // loop to update areaDataList
                 areaDataList = new ArrayList<AreaData>();
                 int numOfAreas = apiData.getAreaMetadata().size(); // number of areas in SG
-                for (int i=0; i<numOfAreas; i++) {
+                for (int i = 0; i < numOfAreas; i++) {
                     ApiData.AreaMetadata currAreaMetadata = apiData.getAreaMetadata().get(i);
                     String currAreaName = currAreaMetadata.getName();
                     ApiData.AreaMetadata.LatLong currLatLong = currAreaMetadata.getLatLong();
-                    double currAreaLat  = currLatLong.getLatitude();
+                    double currAreaLat = currLatLong.getLatitude();
                     double currAreaLong = currLatLong.getLongitude();
                     String currAreaForecast = apiData.getForecastItems().get(0).getForecasts().get(i).getForecast();
+                    String currAreaIcon = iconHashMap.get(currAreaForecast);
                     AreaData currAreaData = new AreaData(currAreaName, currAreaLat,
-                            currAreaLong, currAreaForecast);
+                            currAreaLong, currAreaForecast, currAreaIcon);
                     areaDataList.add(currAreaData);
                 }
 
@@ -151,15 +156,15 @@ public class MainActivity extends AppCompatActivity {
                     public double getSquaredDistanceFromIndex(int index) {
                         // scale to prevent rounding-off
                         double scale = 1000;
-                        return Math.pow((areaDataList.get(index).getLatitude()*scale - currLat*scale),2) +
-                                Math.pow((areaDataList.get(index).getLongitude()*scale - currLong*scale),2);
+                        return Math.pow((areaDataList.get(index).getLatitude() * scale - currLat * scale), 2) +
+                                Math.pow((areaDataList.get(index).getLongitude() * scale - currLong * scale), 2);
                     }
                 }
 
                 // find the nearest area by looping through the list
                 Helper helper = new Helper();
                 double minSquaredDistance = helper.getSquaredDistanceFromIndex(0);
-                for (int i=1; i<numOfAreas; i++) {
+                for (int i = 1; i < numOfAreas; i++) {
                     double currSquaredDistance = helper.getSquaredDistanceFromIndex(i);
                     if (currSquaredDistance < minSquaredDistance) {
                         nearestAreaIndex = i;
