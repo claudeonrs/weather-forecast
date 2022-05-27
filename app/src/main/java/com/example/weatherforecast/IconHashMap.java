@@ -11,6 +11,9 @@ public class IconHashMap {
 
         iconHashMap.put("Partly Cloudy (Night)", "☁");
         iconHashMap.put("Partly Cloudy (Day)", "\uD83C\uDF24");
+        iconHashMap.put("Fair (Night)", "\uD83C\uDF19");
+        iconHashMap.put("Fair (Day)", "☀");
+        iconHashMap.put("Fair and Warm", "☀");
         iconHashMap.put("Cloudy", "☁");
 
         iconHashMap.put("Light Rain", "\uD83C\uDF26");
