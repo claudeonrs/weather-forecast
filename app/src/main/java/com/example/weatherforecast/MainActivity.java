@@ -7,6 +7,7 @@ import android.location.Geocoder;
 import android.location.Location;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -39,6 +40,7 @@ public class MainActivity extends AppCompatActivity {
 
     FusedLocationProviderClient fusedLocationProviderClient;
     TextView coordTextView;
+    ImageView imageView;
     double currLat, currLong;
 
     // List of AreaData containing info abt area name, lat, long, and current forecast
@@ -48,7 +50,9 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         this.setContentView(R.layout.activity_main);
+
         coordTextView = findViewById(R.id.coordTextView);
+        imageView = findViewById(R.id.imageView);
 
         // Initialize fusedLocationProviderClient for getLocation()
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
@@ -172,6 +176,7 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                 Map<String, String> iconHashMap = new IconHashMap().getIconHashMap();
+                Map<String, String> imageHashMap = new IconHashMap().getImageHashMap();
 
                 // set text here
                 String content = "";
@@ -180,6 +185,13 @@ public class MainActivity extends AppCompatActivity {
                 content += shownArea.getForecast() + " " + iconHashMap.get(shownArea.getForecast()) + "\n";
                 content += shownArea.getLatitude() + ", " + shownArea.getLongitude();
                 textView.setText(content);
+
+                try {
+                    imageView.setImageResource(getResources().getIdentifier(imageHashMap.get(shownArea.getForecast()),
+                            "mipmap", getPackageName()));
+                } catch (Exception e) {
+
+                }
             }
 
             @Override
@@ -188,6 +200,8 @@ public class MainActivity extends AppCompatActivity {
                 textView.setText(t.getMessage());
             }
         });
+
+
     }
 }
 
