@@ -39,7 +39,7 @@ import retrofit2.Retrofit;
 public class MainActivity extends AppCompatActivity {
 
     FusedLocationProviderClient fusedLocationProviderClient;
-    TextView coordTextView;
+    TextView textView, lastUpdatedTextView, coordTextView;
     ImageView imageView;
     double currLat, currLong;
 
@@ -51,8 +51,11 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         this.setContentView(R.layout.activity_main);
 
-        coordTextView = findViewById(R.id.coordTextView);
         imageView = findViewById(R.id.imageView);
+        lastUpdatedTextView = findViewById(R.id.lastUpdatedTextView);
+        textView = findViewById(R.id.textView);
+        coordTextView = findViewById(R.id.coordTextView);
+
 
         // Initialize fusedLocationProviderClient for getLocation()
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
@@ -106,8 +109,6 @@ public class MainActivity extends AppCompatActivity {
         // update currLat and currLong
         getLocation();
 
-        TextView textView = findViewById(R.id.textView);
-
         Map<String, String> iconHashMap = new IconHashMap().getIconHashMap();
         RecyclerView areaForecastList = findViewById(R.id.recyclerView);
         AreasForecastRecyclerAdapter adapter = new AreasForecastRecyclerAdapter();
@@ -151,6 +152,11 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                 adapter.updateItems(areaDataList);
+
+                String updateTimestamp = apiData.getForecastItems().get(0).getUpdateTimestamp();
+                String updateTimeString = updateTimestamp.substring(0, 10) + " ";
+                updateTimeString += updateTimestamp.substring(11, 19);
+                lastUpdatedTextView.setText(updateTimeString);
 
                 // index of nearest area in List<AreaData>
                 int nearestAreaIndex = 0;

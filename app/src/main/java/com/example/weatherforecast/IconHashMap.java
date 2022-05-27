@@ -22,6 +22,8 @@ public class IconHashMap {
         iconHashMap.put("Thundery Showers", "\u26C8");
 
         // imageHashMap
+        // .png images can be found in res/mipmap
+        // images downloaded from https://icons8.com/icon/set/weather/small
         imageHashMap.put("Partly Cloudy (Night)", "partly_cloudy_night");
         imageHashMap.put("Partly Cloudy (Day)", "partly_cloudy_day");
         imageHashMap.put("Fair (Night)", "fair_night");
