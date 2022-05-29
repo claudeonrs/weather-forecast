@@ -1,7 +1,6 @@
 # WeatherForecast
 
-![alt text](https://github.com/claudeonrs/WeatherForecast/blob/master/Screenshot_20220527_191118.png)
-<img src="Screenshot_20220527_191118.png" width="128"/>
+<img src="Screenshot_20220527_191118.png" width="256" margin-left="auto" margin-right="auto"/>
 
 ## Deliverables 
 1. README.MD
